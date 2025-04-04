@@ -1,12 +1,13 @@
+import os
 import time
 import requests
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 import threading
 
-# إعدادات تليجرام
-TELEGRAM_TOKEN = "8129013837:AAHZ36_0XqVyb7gIWQQzKtNh9Tf8p5LS-uw"
-CHAT_ID = "-1002547689611"
+# قراءة التوكن والـ Chat ID من متغيرات البيئة في Render
+TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN")
+CHAT_ID = os.environ.get("CHAT_ID")
 TELEGRAM_API_URL = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}"
 
 # قائمة المنتجات للمراقبة
@@ -51,7 +52,6 @@ def check_product_info(product_url):
 
         # استخراج صورة باقي المنتجات
         image_url = None
-
         og_tag = soup.find("meta", property="og:image")
         if og_tag and og_tag.get("content"):
             image_url = og_tag["content"]
@@ -60,7 +60,7 @@ def check_product_info(product_url):
             img_tags = soup.find_all("img")
             for img in img_tags:
                 src = img.get("src") or img.get("data-src")
-                if src and ("cdn.shopify.com" in src or "files" in src) and (".jpg" in src or ".png" in src):
+                if src and (".jpg" in src or ".png" in src):
                     if src.startswith("//"):
                         src = "https:" + src
                     elif src.startswith("/"):
@@ -107,7 +107,7 @@ def send_product_alert_with_image(product_name, status, image_url, product_url, 
         ]]
     }
 
-    if image_url and image_url.startswith("http") and (".jpg" in image_url or ".png" in image_url or "image?" in image_url):
+    if image_url and image_url.startswith("http"):
         payload = {
             "chat_id": CHAT_ID,
             "photo": image_url,
