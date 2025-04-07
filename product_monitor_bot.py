@@ -36,8 +36,8 @@ def check_product_info(url):
         res.raise_for_status()
 
         soup = BeautifulSoup(res.text, "html.parser")
-        
-        # نحاول العثور على الزر الخاص بالحالة
+
+        # الزر أو النص الذي يدل على حالة المنتج
         button = soup.find("button", {"name": "add"})
         if button and "نفذ من المخزون" in button.text:
             status = "غير متوفر"
@@ -46,7 +46,7 @@ def check_product_info(url):
 
         # الصورة
         img = soup.find("meta", property="og:image")
-        image_url = img["content"] if img else "https://via.placeholder.com/600x600.png?text=DZRT+Product"
+        image_url = img["content"] if img and img.get("content") else "https://via.placeholder.com/600x600.png?text=DZRT+Product"
 
         return status, image_url
 
@@ -54,20 +54,16 @@ def check_product_info(url):
         print("⚠️ خطأ في check_product_info:", e)
         return None, None
 
-
 def send_alert(name, status, img, url):
     now = datetime.now().strftime("%H:%M:%S")
     emoji = "✅" if status == "متوفر" else "❌"
-    msg = f"""{emoji} <b>المنتج: {name}</b>
-
-<b>الحالة:</b> <code>{status}</code>
-<b>الوقت:</b> {now}"""
+    msg = f"""{emoji} <b>{name}</b>: <code>{status}</code>"""
 
     keyboard = {
         "inline_keyboard": [[
             {
-                "text": "شراء الآن" if status == "متوفر" else "غير متوفر",
-                "url": url if status == "متوفر" else "https://www.dzrt.com/ar-sa"
+                "text": "شراء" if status == "متوفر" else "عرض المنتج",
+                "url": url
             }
         ]]
     }
@@ -106,8 +102,8 @@ def send_summary():
     for p in products:
         name, url = p["name"], p["url"]
         status, _ = check_product_info(url)
-        symbol = "✅" if status == "متوفر" else "❌"
-        summary += f"{symbol} <b>{name}</b>: <code>{status}</code>\n"
+        emoji = "✅" if status == "متوفر" else "❌"
+        summary += f"{emoji} <b>{name}</b>: <code>{status}</code>\n"
 
     payload = {
         "chat_id": CHAT_ID,
@@ -128,6 +124,7 @@ def schedule_summary():
         time.sleep((target - now).total_seconds())
         send_summary()
 
+# تشغيل البوت
 test_telegram_message()
 threading.Thread(target=schedule_summary, daemon=True).start()
 send_summary()
