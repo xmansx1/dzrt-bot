@@ -26,15 +26,21 @@ def test_telegram_message():
 def check_product_info(url):
     try:
         headers = {
-            "User-Agent": "Mozilla/5.0"
+            "User-Agent": (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/122.0.0.0 Safari/537.36"
+            )
         }
         res = requests.get(url, headers=headers, timeout=10)
         res.raise_for_status()
 
         soup = BeautifulSoup(res.text, "html.parser")
-        page_text = soup.get_text().lower()
+        page_text = soup.get_text(separator=' ').lower()
 
-        # تحليل الحالة بدقة
+        # ✅ اطبع لتشخيص الحالة
+        print("📄 Page content sample:\n", page_text[:300])
+
         unavailable_keywords = ["نفذ من المخزون", "غير متوفر", "out of stock", "sold out"]
         status = "متوفر"
         for word in unavailable_keywords:
