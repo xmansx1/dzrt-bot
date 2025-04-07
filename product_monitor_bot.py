@@ -16,20 +16,19 @@ TELEGRAM_API_URL = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}"
 import undetected_chromedriver as uc
 
 def create_driver():
+    chrome_path = "/usr/bin/google-chrome"  # المسار الصحيح في سيرفر render
     options = uc.ChromeOptions()
     options.add_argument("--headless=new")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--disable-gpu")
     options.add_argument("--window-size=1920x1080")
+    options.add_argument("--disable-blink-features=AutomationControlled")
 
-    # الحل الأساسي: مرّر المسار يدوياً لأن uc يفشل أحياناً في اكتشافه
-    chrome_path = "/usr/bin/google-chrome"
-    if isinstance(chrome_path, str):
-        options.binary_location = chrome_path  # تأكد أنها String
-
-    driver = uc.Chrome(options=options, use_subprocess=True)
+    # مرر المسار صراحةً
+    driver = uc.Chrome(options=options, use_subprocess=True, browser_executable_path=chrome_path)
     return driver
+
 
 
 
