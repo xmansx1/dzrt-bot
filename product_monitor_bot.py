@@ -93,7 +93,7 @@ def send_alert(name, status, img, url):
         print("\u274c خطأ في إرسال التنبيه:", e)
 
 def send_summary():
-    print("\ud83d\udce6 إرسال ملخص المنتجات...")
+    print("📦 إرسال ملخص المنتجات...")
     today = datetime.now().strftime('%Y-%m-%d')
     summary = f"\ud83d\udcca <b>ملخص المنتجات - {today}</b>\n"
     for p in products:
