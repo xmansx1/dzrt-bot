@@ -39,7 +39,6 @@ def test_telegram_message():
         print("✅ رسالة الاختبار:", res.status_code)
     except Exception as e:
         print("❌ فشل إرسال رسالة الاختبار:", e)
-
 def check_product_info(url):
     try:
         headers = {
@@ -47,13 +46,14 @@ def check_product_info(url):
         }
         response = requests.get(url, headers=headers, timeout=10)
         response.raise_for_status()
-        soup = BeautifulSoup(response.text, 'html.parser')
+        html = response.text.lower()
 
-        inventory_tag = soup.find("span", class_="product__inventory")
-        inventory_text = inventory_tag.get_text(strip=True) if inventory_tag else ""
+        if "نفد من المخزون" in html or "غير متوفر" in html:
+            status = "غير متوفر"
+        else:
+            status = "متوفر"
 
-        status = "غير متوفر" if "نفد" in inventory_text or "غير متوفر" in inventory_text else "متوفر"
-
+        soup = BeautifulSoup(html, 'html.parser')
         img = soup.find("meta", property="og:image")
         image_url = img["content"] if img else "https://via.placeholder.com/600x600.png?text=DZRT+Product"
 
@@ -61,6 +61,7 @@ def check_product_info(url):
     except Exception as e:
         print("⚠️ خطأ في check_product_info:", e)
         return "None", None
+
 
 def send_alert(name, status, img, url):
     now = datetime.now().strftime("%H:%M:%S")
