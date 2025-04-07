@@ -4,33 +4,12 @@ import requests
 import threading
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
-import undetected_chromedriver as uc
 from dotenv import load_dotenv
 
 load_dotenv()
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 CHAT_ID = os.getenv("CHAT_ID")
 TELEGRAM_API_URL = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}"
-
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
-
-def create_driver():
-    chrome_options = Options()
-    chrome_options.add_argument("--headless")
-    chrome_options.add_argument("--no-sandbox")
-    chrome_options.add_argument("--disable-dev-shm-usage")
-    chrome_options.add_argument("--disable-gpu")
-    chrome_options.add_argument("--window-size=1920x1080")
-    chrome_options.add_argument("--disable-blink-features=AutomationControlled")
-    chrome_options.binary_location = "/usr/bin/google-chrome"  # ✅ المسار المهم
-
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
-    return driver
-
-
 
 def test_telegram_message():
     try:
@@ -45,12 +24,14 @@ def test_telegram_message():
         print("❌ فشل إرسال رسالة:", e)
 
 def check_product_info(url):
-    driver = create_driver()
     try:
-        driver.get(url)
-        time.sleep(3)
-        soup = BeautifulSoup(driver.page_source, 'html.parser')
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+        }
+        res = requests.get(url, headers=headers, timeout=10)
+        soup = BeautifulSoup(res.text, 'html.parser')
         page_text = soup.get_text().lower()
+
         status = "غير متوفر" if "نفذ من المخزون" in page_text else "متوفر"
         img = soup.find("meta", property="og:image")
         image_url = img["content"] if img else "https://via.placeholder.com/600x600.png?text=DZRT+Product"
@@ -58,13 +39,14 @@ def check_product_info(url):
     except Exception as e:
         print("⚠️ خطأ في check_product_info:", e)
         return None, None
-    finally:
-        driver.quit()
 
 def send_alert(name, status, img, url):
     now = datetime.now().strftime("%H:%M:%S")
     emoji = "🔔" if status == "متوفر" else "❌"
-    msg = f"""{emoji} <b>المنتج: {name}</b>\n\n🔄 <b>الحالة:</b> <code>{status}</code>\n🕒 <b>الوقت:</b> {now}"""
+    msg = f"""{emoji} <b>المنتج: {name}</b>
+
+🔄 <b>الحالة:</b> <code>{status}</code>
+🕒 <b>الوقت:</b> {now}"""
 
     keyboard = {
         "inline_keyboard": [[
