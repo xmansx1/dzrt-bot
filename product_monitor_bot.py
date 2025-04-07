@@ -17,14 +17,17 @@ import undetected_chromedriver as uc
 
 def create_driver():
     options = uc.ChromeOptions()
-    options.add_argument("--headless=new")  # استخدم headless mode الجديد
+    options.add_argument("--headless=new")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--disable-gpu")
     options.add_argument("--window-size=1920x1080")
-    options.add_argument("--disable-blink-features=AutomationControlled")
 
-    # لا تضع binary_location أبداً هنا
+    # الحل الأساسي: مرّر المسار يدوياً لأن uc يفشل أحياناً في اكتشافه
+    chrome_path = "/usr/bin/google-chrome"
+    if isinstance(chrome_path, str):
+        options.binary_location = chrome_path  # تأكد أنها String
+
     driver = uc.Chrome(options=options, use_subprocess=True)
     return driver
 
