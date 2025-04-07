@@ -26,32 +26,43 @@ def test_telegram_message():
 def check_product_info(url):
     try:
         headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+            "User-Agent": "Mozilla/5.0"
         }
         res = requests.get(url, headers=headers, timeout=10)
-        soup = BeautifulSoup(res.text, 'html.parser')
+        res.raise_for_status()
+
+        soup = BeautifulSoup(res.text, "html.parser")
         page_text = soup.get_text().lower()
 
-        status = "غير متوفر" if "نفذ من المخزون" in page_text else "متوفر"
+        # تحليل الحالة بدقة
+        unavailable_keywords = ["نفذ من المخزون", "غير متوفر", "out of stock", "sold out"]
+        status = "متوفر"
+        for word in unavailable_keywords:
+            if word in page_text:
+                status = "غير متوفر"
+                break
+
         img = soup.find("meta", property="og:image")
         image_url = img["content"] if img else "https://via.placeholder.com/600x600.png?text=DZRT+Product"
+
         return status, image_url
+
     except Exception as e:
         print("⚠️ خطأ في check_product_info:", e)
         return None, None
 
 def send_alert(name, status, img, url):
     now = datetime.now().strftime("%H:%M:%S")
-    emoji = "🔔" if status == "متوفر" else "❌"
+    emoji = "✅" if status == "متوفر" else "❌"
     msg = f"""{emoji} <b>المنتج: {name}</b>
 
-🔄 <b>الحالة:</b> <code>{status}</code>
-🕒 <b>الوقت:</b> {now}"""
+<b>الحالة:</b> <code>{status}</code>
+<b>الوقت:</b> {now}"""
 
     keyboard = {
         "inline_keyboard": [[
             {
-                "text": "🛒 شراء" if status == "متوفر" else "❌ غير متوفر",
+                "text": "شراء الآن" if status == "متوفر" else "غير متوفر",
                 "url": url if status == "متوفر" else "https://www.dzrt.com/ar-sa"
             }
         ]]
@@ -87,7 +98,7 @@ products = [
 ]
 
 def send_summary():
-    summary = f"📊 <b>ملخص المنتجات - {datetime.now().strftime('%Y-%m-%d')}</b>\n\n"
+    summary = f"📊 <b>ملخص المنتجات - {datetime.now().strftime('%Y-%m-%d')}</b>\n"
     for p in products:
         name, url = p["name"], p["url"]
         status, _ = check_product_info(url)
