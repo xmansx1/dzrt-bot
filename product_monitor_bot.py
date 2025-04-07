@@ -7,9 +7,29 @@ from datetime import datetime, timedelta
 from dotenv import load_dotenv
 
 load_dotenv()
+
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 CHAT_ID = os.getenv("CHAT_ID")
 TELEGRAM_API_URL = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}"
+
+headers = {
+    "User-Agent": "Mozilla/5.0"
+}
+
+products = [
+    {
+        "name": "Seaside Frost",
+        "url": "https://www.dzrt.com/ar-sa/products/seaside-frost"
+    },
+    {
+        "name": "icy-rush",
+        "url": "https://www.dzrt.com/ar-sa/products/icy-rush"
+    },
+    {
+        "name": "Riyadh Season Edition",
+        "url": "https://www.dzrt.com/ar-sa/products/riyadh-season-edition"
+    }
+]
 
 def test_telegram_message():
     try:
@@ -21,48 +41,37 @@ def test_telegram_message():
         res = requests.post(f"{TELEGRAM_API_URL}/sendMessage", json=payload)
         print("✅ رسالة الاختبار:", res.status_code)
     except Exception as e:
-        print("❌ فشل إرسال رسالة:", e)
+        print("❌ فشل إرسال رسالة الاختبار:", e)
 
 def check_product_info(url):
     try:
-        headers = {
-            "User-Agent": (
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                "AppleWebKit/537.36 (KHTML, like Gecko) "
-                "Chrome/122.0.0.0 Safari/537.36"
-            )
-        }
-        res = requests.get(url, headers=headers, timeout=10)
-        res.raise_for_status()
+        response = requests.get(url, headers=headers)
+        soup = BeautifulSoup(response.content, 'html.parser')
+        page_text = soup.get_text().lower()
 
-        soup = BeautifulSoup(res.text, "html.parser")
+        status = "غير متوفر" if "نفذ من المخزون" in page_text else "متوفر"
 
-        # الزر أو النص الذي يدل على حالة المنتج
-        button = soup.find("button", {"name": "add"})
-        if button and "نفذ من المخزون" in button.text:
-            status = "غير متوفر"
-        else:
-            status = "متوفر"
-
-        # الصورة
         img = soup.find("meta", property="og:image")
-        image_url = img["content"] if img and img.get("content") else "https://via.placeholder.com/600x600.png?text=DZRT+Product"
+        image_url = img["content"] if img else "https://via.placeholder.com/600x600.png?text=DZRT+Product"
 
         return status, image_url
-
     except Exception as e:
         print("⚠️ خطأ في check_product_info:", e)
-        return None, None
+        return "None", "https://via.placeholder.com/600x600.png?text=Error"
 
 def send_alert(name, status, img, url):
     now = datetime.now().strftime("%H:%M:%S")
     emoji = "✅" if status == "متوفر" else "❌"
-    msg = f"""{emoji} <b>{name}</b>: <code>{status}</code>"""
+
+    msg = f"""<b>المنتج: {name}</b> {emoji}
+
+<b>الحالة الجديدة:</b> {status}
+<b>وقت التحديث:</b> {now}"""
 
     keyboard = {
         "inline_keyboard": [[
             {
-                "text": "شراء" if status == "متوفر" else "عرض المنتج",
+                "text": "شراء الآن" if status == "متوفر" else "عرض المنتج",
                 "url": url
             }
         ]]
@@ -80,40 +89,41 @@ def send_alert(name, status, img, url):
         r = requests.post(f"{TELEGRAM_API_URL}/sendPhoto", json=payload)
         print(f"📤 إرسال {name}: {r.status_code}")
     except Exception as e:
-        print("❌ خطأ في إرسال التليجرام:", e)
-
-products = [
-    {
-        "name": "Seaside Frost",
-        "url": "https://www.dzrt.com/ar-sa/products/seaside-frost"
-    },
-    {
-        "name": "icy-rush",
-        "url": "https://www.dzrt.com/ar-sa/products/icy-rush"
-    },
-    {
-        "name": "Riyadh Season Edition",
-        "url": "https://www.dzrt.com/ar-sa/products/riyadh-season-edition"
-    }
-]
+        print(f"❌ خطأ في إرسال {name}:", e)
 
 def send_summary():
-    summary = f"📊 <b>ملخص المنتجات - {datetime.now().strftime('%Y-%m-%d')}</b>\n"
     for p in products:
         name, url = p["name"], p["url"]
-        status, _ = check_product_info(url)
+        status, image_url = check_product_info(url)
+        now = datetime.now().strftime("%H:%M:%S")
         emoji = "✅" if status == "متوفر" else "❌"
-        summary += f"{emoji} <b>{name}</b>: <code>{status}</code>\n"
 
-    payload = {
-        "chat_id": CHAT_ID,
-        "text": summary,
-        "parse_mode": "HTML"
-    }
-    try:
-        requests.post(f"{TELEGRAM_API_URL}/sendMessage", json=payload)
-    except Exception as e:
-        print("❌ فشل إرسال الملخص:", e)
+        caption = f"""<b>المنتج: {name}</b> {emoji}
+
+<b>الحالة الجديدة:</b> {status}
+<b>وقت التحديث:</b> {now}"""
+
+        keyboard = {
+            "inline_keyboard": [[
+                {
+                    "text": "شراء الآن" if status == "متوفر" else "عرض المنتج",
+                    "url": url
+                }
+            ]]
+        }
+
+        payload = {
+            "chat_id": CHAT_ID,
+            "photo": image_url,
+            "caption": caption,
+            "parse_mode": "HTML",
+            "reply_markup": keyboard
+        }
+
+        try:
+            requests.post(f"{TELEGRAM_API_URL}/sendPhoto", json=payload)
+        except Exception as e:
+            print(f"❌ فشل إرسال ملخص المنتج {name}:", e)
 
 def schedule_summary():
     while True:
@@ -124,7 +134,7 @@ def schedule_summary():
         time.sleep((target - now).total_seconds())
         send_summary()
 
-# تشغيل البوت
+# ✅ Start bot
 test_telegram_message()
 threading.Thread(target=schedule_summary, daemon=True).start()
 send_summary()
@@ -135,4 +145,4 @@ while True:
         status, image = check_product_info(url)
         if status:
             send_alert(name, status, image, url)
-    time.sleep(30)
+    time.sleep(60)
