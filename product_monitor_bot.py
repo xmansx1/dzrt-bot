@@ -5,7 +5,6 @@ import threading
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 import undetected_chromedriver as uc
-import chromedriver_autoinstaller
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -13,10 +12,8 @@ TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 CHAT_ID = os.getenv("CHAT_ID")
 TELEGRAM_API_URL = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}"
 
-import undetected_chromedriver as uc
-
 def create_driver():
-    chrome_path = "/usr/bin/google-chrome"  # المسار الصحيح في سيرفر render
+    chrome_path = "/usr/bin/google-chrome"
     options = uc.ChromeOptions()
     options.add_argument("--headless=new")
     options.add_argument("--no-sandbox")
@@ -25,19 +22,14 @@ def create_driver():
     options.add_argument("--window-size=1920x1080")
     options.add_argument("--disable-blink-features=AutomationControlled")
 
-    # مرر المسار صراحةً
     driver = uc.Chrome(options=options, use_subprocess=True, browser_executable_path=chrome_path)
     return driver
-
-
-
-
 
 def test_telegram_message():
     try:
         payload = {
             "chat_id": CHAT_ID,
-            "text": "تم تشغيل البوت بنجاح!",
+            "text": "🚀 تم تشغيل البوت بنجاح!",
             "parse_mode": "HTML"
         }
         res = requests.post(f"{TELEGRAM_API_URL}/sendMessage", json=payload)
@@ -64,12 +56,13 @@ def check_product_info(url):
 
 def send_alert(name, status, img, url):
     now = datetime.now().strftime("%H:%M:%S")
-    msg = f"<b>المنتج: {name}</b>\n\n<b>الحالة:</b> <code>{status}</code>\n<b>الوقت:</b> {now}"
+    emoji = "🔔" if status == "متوفر" else "❌"
+    msg = f"""{emoji} <b>المنتج: {name}</b>\n\n🔄 <b>الحالة:</b> <code>{status}</code>\n🕒 <b>الوقت:</b> {now}"""
 
     keyboard = {
         "inline_keyboard": [[
             {
-                "text": "شراء" if status == "متوفر" else "غير متوفر",
+                "text": "🛒 شراء" if status == "متوفر" else "❌ غير متوفر",
                 "url": url if status == "متوفر" else "https://www.dzrt.com/ar-sa"
             }
         ]]
