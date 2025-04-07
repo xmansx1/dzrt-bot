@@ -36,18 +36,15 @@ def check_product_info(url):
         res.raise_for_status()
 
         soup = BeautifulSoup(res.text, "html.parser")
-        page_text = soup.get_text(separator=' ').lower()
+        
+        # نحاول العثور على الزر الخاص بالحالة
+        button = soup.find("button", {"name": "add"})
+        if button and "نفذ من المخزون" in button.text:
+            status = "غير متوفر"
+        else:
+            status = "متوفر"
 
-        # ✅ اطبع لتشخيص الحالة
-        print("📄 Page content sample:\n", page_text[:300])
-
-        unavailable_keywords = ["نفذ من المخزون", "غير متوفر", "out of stock", "sold out"]
-        status = "متوفر"
-        for word in unavailable_keywords:
-            if word in page_text:
-                status = "غير متوفر"
-                break
-
+        # الصورة
         img = soup.find("meta", property="og:image")
         image_url = img["content"] if img else "https://via.placeholder.com/600x600.png?text=DZRT+Product"
 
@@ -56,6 +53,7 @@ def check_product_info(url):
     except Exception as e:
         print("⚠️ خطأ في check_product_info:", e)
         return None, None
+
 
 def send_alert(name, status, img, url):
     now = datetime.now().strftime("%H:%M:%S")
