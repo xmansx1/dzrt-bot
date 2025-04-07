@@ -1,5 +1,7 @@
 selenium
-undetected-chromedriver
+webdriver-manager
 requests
 beautifulsoup4
 python-dotenv
+undetected-chromedriver
+chromedriver-autoinstaller
