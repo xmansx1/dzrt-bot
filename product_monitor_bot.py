@@ -5,6 +5,7 @@ import threading
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
+from playwright.sync_api import sync_playwright
 
 load_dotenv()
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
@@ -26,9 +27,6 @@ products = [
     }
 ]
 
-# حفظ آخر حالة لكل منتج لتفادي تكرار الإرسال
-last_statuses = {}
-
 def test_telegram_message():
     try:
         payload = {
@@ -39,29 +37,36 @@ def test_telegram_message():
         print("✅ رسالة الاختبار:", res.status_code)
     except Exception as e:
         print("❌ فشل إرسال رسالة الاختبار:", e)
+
 def check_product_info(url):
     try:
-        headers = {
-            "User-Agent": "Mozilla/5.0"
-        }
-        response = requests.get(url, headers=headers, timeout=10)
-        response.raise_for_status()
-        html = response.text.lower()
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True)
+            page = browser.new_page()
+            page.goto(url, timeout=60000)
+            page.wait_for_timeout(3000)
+            content = page.content()
+            browser.close()
 
-        if "نفد من المخزون" in html or "غير متوفر" in html:
+        soup = BeautifulSoup(content, 'html.parser')
+
+        # حالة المنتج
+        inventory_tag = soup.find("span", class_="product__inventory")
+        inventory_text = inventory_tag.get_text(strip=True) if inventory_tag else ""
+
+        status = "متوفر"
+        if "نفد من المخزون" in inventory_text or "غير متوفر" in inventory_text:
             status = "غير متوفر"
-        else:
-            status = "متوفر"
 
-        soup = BeautifulSoup(html, 'html.parser')
-        img = soup.find("meta", property="og:image")
-        image_url = img["content"] if img else "https://via.placeholder.com/600x600.png?text=DZRT+Product"
+        # الصورة
+        img_tag = soup.find("meta", property="og:image")
+        image_url = img_tag["content"] if img_tag else "https://via.placeholder.com/600x600.png?text=DZRT+Product"
 
         return status, image_url
+
     except Exception as e:
         print("⚠️ خطأ في check_product_info:", e)
         return "None", None
-
 
 def send_alert(name, status, img, url):
     now = datetime.now().strftime("%H:%M:%S")
@@ -125,7 +130,7 @@ def schedule_summary():
         time.sleep((target - now).total_seconds())
         send_summary()
 
-# =================== التشغيل =======================
+# ============ البداية ============
 test_telegram_message()
 send_summary()
 threading.Thread(target=schedule_summary, daemon=True).start()
@@ -134,7 +139,6 @@ while True:
     for p in products:
         name, url = p["name"], p["url"]
         status, image = check_product_info(url)
-        if status and last_statuses.get(name) != status:
+        if status:
             send_alert(name, status, image, url)
-            last_statuses[name] = status
     time.sleep(60)
