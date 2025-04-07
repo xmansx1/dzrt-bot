@@ -26,6 +26,9 @@ products = [
     }
 ]
 
+# حفظ آخر حالة لكل منتج لتفادي تكرار الإرسال
+last_statuses = {}
+
 def test_telegram_message():
     try:
         payload = {
@@ -42,20 +45,19 @@ def check_product_info(url):
         headers = {
             "User-Agent": "Mozilla/5.0"
         }
-        response = requests.get(url, headers=headers)
+        response = requests.get(url, headers=headers, timeout=10)
+        response.raise_for_status()
         soup = BeautifulSoup(response.text, 'html.parser')
 
-        # تحقق من النص "نفد من المخزون"
-        page_text = soup.get_text().lower()
-        if "نفد من المخزون" in page_text or "نفد من المخزن" in page_text:
-            status = "غير متوفر"
-        else:
-            status = "متوفر"
+        inventory_tag = soup.find("span", class_="product__inventory")
+        inventory_text = inventory_tag.get_text(strip=True) if inventory_tag else ""
+
+        status = "غير متوفر" if "نفد" in inventory_text or "غير متوفر" in inventory_text else "متوفر"
 
         img = soup.find("meta", property="og:image")
         image_url = img["content"] if img else "https://via.placeholder.com/600x600.png?text=DZRT+Product"
-        return status, image_url
 
+        return status, image_url
     except Exception as e:
         print("⚠️ خطأ في check_product_info:", e)
         return "None", None
@@ -122,7 +124,7 @@ def schedule_summary():
         time.sleep((target - now).total_seconds())
         send_summary()
 
-# =================== بداية التشغيل =======================
+# =================== التشغيل =======================
 test_telegram_message()
 send_summary()
 threading.Thread(target=schedule_summary, daemon=True).start()
@@ -131,6 +133,7 @@ while True:
     for p in products:
         name, url = p["name"], p["url"]
         status, image = check_product_info(url)
-        if status:
+        if status and last_statuses.get(name) != status:
             send_alert(name, status, image, url)
+            last_statuses[name] = status
     time.sleep(60)
