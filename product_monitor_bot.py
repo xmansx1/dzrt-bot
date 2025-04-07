@@ -15,20 +15,19 @@ TELEGRAM_API_URL = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}"
 
 import undetected_chromedriver as uc
 
-import undetected_chromedriver as uc
-
 def create_driver():
     options = uc.ChromeOptions()
-    options.add_argument("--headless")
+    options.add_argument("--headless=new")  # استخدم headless mode الجديد
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--disable-gpu")
     options.add_argument("--window-size=1920x1080")
     options.add_argument("--disable-blink-features=AutomationControlled")
 
-    # لا تضع binary_location لأن uc يتعامل معها
-    driver = uc.Chrome(options=options)
+    # لا تضع binary_location أبداً هنا
+    driver = uc.Chrome(options=options, use_subprocess=True)
     return driver
+
 
 
 
