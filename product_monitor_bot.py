@@ -2,28 +2,30 @@ import os
 import time
 import requests
 import threading
-from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
-from playwright.sync_api import sync_playwright
 
 load_dotenv()
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 CHAT_ID = os.getenv("CHAT_ID")
 TELEGRAM_API_URL = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}"
 
+# روابط .json لمنتجات DZRT
 products = [
     {
         "name": "Seaside Frost",
-        "url": "https://www.dzrt.com/ar-sa/products/seaside-frost"
+        "url": "https://www.dzrt.com/ar-sa/products/seaside-frost",
+        "json_url": "https://www.dzrt.com/ar-sa/products/seaside-frost.json"
     },
     {
         "name": "icy-rush",
-        "url": "https://www.dzrt.com/ar-sa/products/icy-rush"
+        "url": "https://www.dzrt.com/ar-sa/products/icy-rush",
+        "json_url": "https://www.dzrt.com/ar-sa/products/icy-rush.json"
     },
     {
         "name": "Riyadh Season Edition",
-        "url": "https://www.dzrt.com/ar-sa/products/riyadh-season-edition"
+        "url": "https://www.dzrt.com/ar-sa/products/riyadh-season-edition",
+        "json_url": "https://www.dzrt.com/ar-sa/products/riyadh-season-edition.json"
     }
 ]
 
@@ -38,32 +40,15 @@ def test_telegram_message():
     except Exception as e:
         print("❌ فشل إرسال رسالة الاختبار:", e)
 
-def check_product_info(url):
+def check_product_info(product):
     try:
-        with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True)
-            page = browser.new_page()
-            page.goto(url, timeout=60000)
-            page.wait_for_timeout(3000)
-            content = page.content()
-            browser.close()
-
-        soup = BeautifulSoup(content, 'html.parser')
-
-        # حالة المنتج
-        inventory_tag = soup.find("span", class_="product__inventory")
-        inventory_text = inventory_tag.get_text(strip=True) if inventory_tag else ""
-
-        status = "متوفر"
-        if "نفد من المخزون" in inventory_text or "غير متوفر" in inventory_text:
-            status = "غير متوفر"
-
-        # الصورة
-        img_tag = soup.find("meta", property="og:image")
-        image_url = img_tag["content"] if img_tag else "https://via.placeholder.com/600x600.png?text=DZRT+Product"
-
+        response = requests.get(product["json_url"])
+        data = response.json()
+        variant = data["product"]["variants"][0]
+        available = variant["available"]
+        image_url = data["product"]["images"][0]["src"] if data["product"]["images"] else "https://via.placeholder.com/600x600.png?text=DZRT+Product"
+        status = "متوفر" if available else "غير متوفر"
         return status, image_url
-
     except Exception as e:
         print("⚠️ خطأ في check_product_info:", e)
         return "None", None
@@ -104,8 +89,8 @@ def send_summary():
     today = datetime.now().strftime('%Y-%m-%d')
     summary = f"📊 <b>ملخص المنتجات - {today}</b>\n"
     for p in products:
-        name, url = p["name"], p["url"]
-        status, _ = check_product_info(url)
+        name = p["name"]
+        status, _ = check_product_info(p)
         symbol = "✅" if status == "متوفر" else "❌"
         summary += f"{symbol} <b>{name}:</b> <code>{status}</code>\n"
 
@@ -130,7 +115,7 @@ def schedule_summary():
         time.sleep((target - now).total_seconds())
         send_summary()
 
-# ============ البداية ============
+# ====== بداية التشغيل ======
 test_telegram_message()
 send_summary()
 threading.Thread(target=schedule_summary, daemon=True).start()
@@ -138,7 +123,7 @@ threading.Thread(target=schedule_summary, daemon=True).start()
 while True:
     for p in products:
         name, url = p["name"], p["url"]
-        status, image = check_product_info(url)
+        status, image = check_product_info(p)
         if status:
             send_alert(name, status, image, url)
     time.sleep(60)
