@@ -1,14 +1,15 @@
 services:
   - type: web
-    name: dzrt-product-bot
+    name: dzrt-product-monitor
     env: python
-    plan: free
     buildCommand: |
       pip install -r requirements.txt
-      playwright install chromium
+      python -m playwright install
     startCommand: python product_monitor_bot.py
     envVars:
       - key: TELEGRAM_TOKEN
         sync: false
       - key: CHAT_ID
         sync: false
+    region: oregon
+    plan: free

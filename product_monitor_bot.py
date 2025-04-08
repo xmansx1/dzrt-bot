@@ -32,45 +32,36 @@ def test_telegram_message():
     try:
         payload = {
             "chat_id": CHAT_ID,
-            "text": "تم تشغيل البوت بنجاح! 🚀",
+            "text": "🚀 تم تشغيل البوت بنجاح!",
         }
         res = requests.post(f"{TELEGRAM_API_URL}/sendMessage", json=payload)
         print("✅ رسالة الاختبار:", res.status_code)
     except Exception as e:
         print("❌ فشل إرسال رسالة الاختبار:", e)
 
-from playwright.sync_api import sync_playwright
-
-def check_product_info(url):
+async def check_product_info(url):
     try:
-        with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True)
-            page = browser.new_page()
-            page.goto(url, timeout=60000)
+        async with async_playwright() as p:
+            browser = await p.chromium.launch(headless=True)
+            page = await browser.new_page()
+            await page.goto(url, timeout=60000)
 
-            # ننتظر عنصر "product__inventory" أن يظهر
-            page.wait_for_selector("span.product__inventory", timeout=10000)
+            await page.wait_for_selector("span.product__inventory", timeout=10000)
+            inventory_element = await page.query_selector("span.product__inventory")
+            inventory_text = await inventory_element.inner_text()
 
-            # نقرأ النص من العنصر
-            inventory_text = page.query_selector("span.product__inventory").inner_text()
+            image_url = await page.get_attribute("meta[property='og:image']", "content")
+            await browser.close()
 
-            # نقرأ صورة المنتج من og:image
-            image_url = page.locator("meta[property='og:image']").get_attribute("content")
-
-            browser.close()
-
-            # نحدد الحالة
             if "نفد من المخزون" in inventory_text or "غير متوفر" in inventory_text:
                 status = "غير متوفر"
             else:
                 status = "متوفر"
 
             return status, image_url
-
     except Exception as e:
         print("⚠️ خطأ في check_product_info:", e)
         return "None", None
-
 
 def send_alert(name, status, img, url):
     now = datetime.now().strftime("%H:%M:%S")
@@ -147,11 +138,11 @@ def schedule_summary():
         time.sleep((target - now).total_seconds())
         asyncio.run(send_summary())
 
-# ===== بداية التشغيل =====
-test_telegram_message()
-asyncio.run(send_summary())
-threading.Thread(target=schedule_summary, daemon=True).start()
-threading.Thread(target=run_async_loop, daemon=True).start()
-
-while True:
-    time.sleep(60)
+# ============= تشغيل البرنامج =============
+if __name__ == "__main__":
+    test_telegram_message()
+    asyncio.run(send_summary())
+    threading.Thread(target=schedule_summary, daemon=True).start()
+    threading.Thread(target=run_async_loop, daemon=True).start()
+    while True:
+        time.sleep(60)
