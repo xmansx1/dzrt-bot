@@ -39,32 +39,38 @@ def test_telegram_message():
     except Exception as e:
         print("❌ فشل إرسال رسالة الاختبار:", e)
 
-async def check_product_info(url):
+from playwright.sync_api import sync_playwright
+
+def check_product_info(url):
     try:
-        async with async_playwright() as p:
-            browser = await p.chromium.launch(headless=True)
-            page = await browser.new_page()
-            await page.goto(url, timeout=60000)
-            content = await page.content()
-            soup = BeautifulSoup(content, 'html.parser')
-            await browser.close()
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True)
+            page = browser.new_page()
+            page.goto(url, timeout=60000)
 
-            inventory_tag = soup.find("span", class_="product__inventory")
-            inventory_text = inventory_tag.get_text(strip=True) if inventory_tag else ""
+            # ننتظر عنصر "product__inventory" أن يظهر
+            page.wait_for_selector("span.product__inventory", timeout=10000)
 
+            # نقرأ النص من العنصر
+            inventory_text = page.query_selector("span.product__inventory").inner_text()
+
+            # نقرأ صورة المنتج من og:image
+            image_url = page.locator("meta[property='og:image']").get_attribute("content")
+
+            browser.close()
+
+            # نحدد الحالة
             if "نفد من المخزون" in inventory_text or "غير متوفر" in inventory_text:
                 status = "غير متوفر"
             else:
                 status = "متوفر"
 
-            # الصورة من og:image
-            img = soup.find("meta", property="og:image")
-            image_url = img["content"] if img else "https://via.placeholder.com/600x600.png?text=DZRT+Product"
-
             return status, image_url
+
     except Exception as e:
         print("⚠️ خطأ في check_product_info:", e)
         return "None", None
+
 
 def send_alert(name, status, img, url):
     now = datetime.now().strftime("%H:%M:%S")
