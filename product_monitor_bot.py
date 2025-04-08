@@ -46,22 +46,33 @@ async def check_product_info(url):
             page = await browser.new_page()
             await page.goto(url, timeout=60000)
 
-            await page.wait_for_selector("span.product__inventory", timeout=10000)
-            inventory_element = await page.query_selector("span.product__inventory")
-            inventory_text = await inventory_element.inner_text()
+            # ننتظر ظهور الصفحة كاملة
+            await page.wait_for_load_state("networkidle")
 
+            # نحاول قراءة العنصر
+            inventory_element = await page.query_selector("span.product__inventory")
+            if inventory_element:
+                inventory_text = await inventory_element.inner_text()
+            else:
+                inventory_text = ""
+
+            # og:image
             image_url = await page.get_attribute("meta[property='og:image']", "content")
             await browser.close()
 
             if "نفد من المخزون" in inventory_text or "غير متوفر" in inventory_text:
                 status = "غير متوفر"
-            else:
+            elif inventory_text:
                 status = "متوفر"
+            else:
+                status = "غير معروف"
 
             return status, image_url
+
     except Exception as e:
         print("⚠️ خطأ في check_product_info:", e)
         return "None", None
+
 
 def send_alert(name, status, img, url):
     now = datetime.now().strftime("%H:%M:%S")
