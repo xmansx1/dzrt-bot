@@ -1,11 +1,12 @@
 import os
 import time
-import requests
+import asyncio
 import threading
-from datetime import datetime, timedelta
+import requests
 from bs4 import BeautifulSoup
+from datetime import datetime, timedelta
 from dotenv import load_dotenv
-from playwright.sync_api import sync_playwright
+from playwright.async_api import async_playwright
 
 load_dotenv()
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
@@ -31,43 +32,47 @@ def test_telegram_message():
     try:
         payload = {
             "chat_id": CHAT_ID,
-            "text": "تم تشغيل البوت بنجاح! \ud83d\ude80",
+            "text": "تم تشغيل البوت بنجاح! 🚀",
         }
         res = requests.post(f"{TELEGRAM_API_URL}/sendMessage", json=payload)
-        print("\u2705 رسالة الاختبار:", res.status_code)
+        print("✅ رسالة الاختبار:", res.status_code)
     except Exception as e:
-        print("\u274c فشل إرسال رسالة الاختبار:", e)
+        print("❌ فشل إرسال رسالة الاختبار:", e)
 
-def check_product_info(url):
+async def check_product_info(url):
     try:
-        with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True)
-            page = browser.new_page()
-            page.goto(url, timeout=60000)
-            page.wait_for_timeout(3000)
-
-            content = page.content()
+        async with async_playwright() as p:
+            browser = await p.chromium.launch(headless=True)
+            page = await browser.new_page()
+            await page.goto(url, timeout=60000)
+            content = await page.content()
             soup = BeautifulSoup(content, 'html.parser')
+            await browser.close()
 
             inventory_tag = soup.find("span", class_="product__inventory")
             inventory_text = inventory_tag.get_text(strip=True) if inventory_tag else ""
 
-            status = "غير متوفر" if "نفد من المخزون" in inventory_text or "غير متوفر" in inventory_text else "متوفر"
+            if "نفد من المخزون" in inventory_text or "غير متوفر" in inventory_text:
+                status = "غير متوفر"
+            else:
+                status = "متوفر"
 
+            # الصورة من og:image
             img = soup.find("meta", property="og:image")
             image_url = img["content"] if img else "https://via.placeholder.com/600x600.png?text=DZRT+Product"
 
-            browser.close()
             return status, image_url
-
     except Exception as e:
-        print("\u26a0\ufe0f خطأ في check_product_info:", e)
+        print("⚠️ خطأ في check_product_info:", e)
         return "None", None
 
 def send_alert(name, status, img, url):
     now = datetime.now().strftime("%H:%M:%S")
-    emoji = "\u2705" if status == "متوفر" else "\u274c"
-    msg = f"""{emoji} <b>المنتج: {name}</b>\n\n<b>الحالة الجديدة:</b> <code>{status}</code>\n<b>وقت التحديث:</b> {now}"""
+    emoji = "✅" if status == "متوفر" else "❌"
+    msg = f"""{emoji} <b>المنتج: {name}</b>
+
+<b>الحالة الجديدة:</b> <code>{status}</code>
+<b>وقت التحديث:</b> {now}"""
 
     keyboard = {
         "inline_keyboard": [[
@@ -88,18 +93,19 @@ def send_alert(name, status, img, url):
 
     try:
         res = requests.post(f"{TELEGRAM_API_URL}/sendPhoto", json=payload)
-        print(f"\ud83d\udce6 إرسال تنبيه {name}: {res.status_code}")
+        print(f"📦 إرسال تنبيه {name}: {res.status_code}")
     except Exception as e:
-        print("\u274c خطأ في إرسال التنبيه:", e)
+        print("❌ خطأ في إرسال التنبيه:", e)
 
-def send_summary():
+async def send_summary():
     print("📦 إرسال ملخص المنتجات...")
     today = datetime.now().strftime('%Y-%m-%d')
-    summary = f"\ud83d\udcca <b>ملخص المنتجات - {today}</b>\n"
+    summary = f"📊 <b>ملخص المنتجات - {today}</b>\n"
+
     for p in products:
         name, url = p["name"], p["url"]
-        status, _ = check_product_info(url)
-        symbol = "\u2705" if status == "متوفر" else "\u274c"
+        status, _ = await check_product_info(url)
+        symbol = "✅" if status == "متوفر" else "❌"
         summary += f"{symbol} <b>{name}:</b> <code>{status}</code>\n"
 
     payload = {
@@ -110,9 +116,21 @@ def send_summary():
 
     try:
         res = requests.post(f"{TELEGRAM_API_URL}/sendMessage", json=payload)
-        print("\ud83d\udce4 تم إرسال الملخص:", res.status_code)
+        print("📤 تم إرسال الملخص:", res.status_code)
     except Exception as e:
-        print("\u274c فشل إرسال الملخص:", e)
+        print("❌ فشل إرسال الملخص:", e)
+
+async def monitor_loop():
+    while True:
+        for p in products:
+            name, url = p["name"], p["url"]
+            status, image = await check_product_info(url)
+            if status:
+                send_alert(name, status, image, url)
+        await asyncio.sleep(120)
+
+def run_async_loop():
+    asyncio.run(monitor_loop())
 
 def schedule_summary():
     while True:
@@ -121,17 +139,13 @@ def schedule_summary():
         if now >= target:
             target += timedelta(days=1)
         time.sleep((target - now).total_seconds())
-        send_summary()
+        asyncio.run(send_summary())
 
-# =================== بدء التشغيل ======================
+# ===== بداية التشغيل =====
 test_telegram_message()
-send_summary()
+asyncio.run(send_summary())
 threading.Thread(target=schedule_summary, daemon=True).start()
+threading.Thread(target=run_async_loop, daemon=True).start()
 
 while True:
-    for p in products:
-        name, url = p["name"], p["url"]
-        status, image = check_product_info(url)
-        if status:
-            send_alert(name, status, image, url)
     time.sleep(60)
