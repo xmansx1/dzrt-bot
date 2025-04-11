@@ -15,8 +15,7 @@ RUN apt-get update && apt-get install -y \
     libatk1.0-0 libcups2 libdbus-1-3 libxss1 libx11-xcb1 \
     libxext6 libxfixes3 libxkbcommon0 libpango-1.0-0 \
     libcairo2 libgbm1 libexpat1 libnspr4 libsmime3 libx11-6 \
-    libxcomposite1 libxcursor1 libxdamage1 libxrandr2 \
-    libxss1 libxtst6 libatk-bridge2.0-0 libgtk-3-0 \
+    libxcursor1 libxtst6 libgtk-3-0 \
     --no-install-recommends && rm -rf /var/lib/apt/lists/*
 
 # تثبيت pip وتحديثه
