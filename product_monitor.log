@@ -1,0 +1,70 @@
+2025-04-11 17:10:58,955 - INFO - ====== WebDriver manager ======
+2025-04-11 17:11:00,944 - INFO - Get LATEST chromedriver version for google-chrome
+2025-04-11 17:11:01,311 - INFO - Get LATEST chromedriver version for google-chrome
+2025-04-11 17:11:01,556 - INFO - Driver [C:\Users\manso\.wdm\drivers\chromedriver\win64\135.0.7049.84\chromedriver-win32/chromedriver.exe] found in cache
+2025-04-11 17:19:19,413 - INFO - ====== WebDriver manager ======
+2025-04-11 17:19:21,169 - INFO - Get LATEST chromedriver version for google-chrome
+2025-04-11 17:19:22,032 - INFO - Get LATEST chromedriver version for google-chrome
+2025-04-11 17:19:22,319 - INFO - Driver [C:\Users\manso\.wdm\drivers\chromedriver\win64\135.0.7049.84\chromedriver-win32/chromedriver.exe] found in cache
+2025-04-11 17:35:21,259 - WARNING - Retrying (Retry(total=2, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None)': /session/2c9cf9516817759215d8dd0570eaa095
+2025-04-11 17:35:25,360 - WARNING - Retrying (Retry(total=1, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x00000279C30F8B10>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it')': /session/2c9cf9516817759215d8dd0570eaa095
+2025-04-11 17:35:29,441 - WARNING - Retrying (Retry(total=0, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x00000279C3501F90>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it')': /session/2c9cf9516817759215d8dd0570eaa095
+2025-04-11 17:36:13,512 - INFO - ====== WebDriver manager ======
+2025-04-11 17:36:15,462 - INFO - Get LATEST chromedriver version for google-chrome
+2025-04-11 17:36:15,763 - INFO - Get LATEST chromedriver version for google-chrome
+2025-04-11 17:36:16,040 - INFO - Driver [C:\Users\manso\.wdm\drivers\chromedriver\win64\135.0.7049.84\chromedriver-win32/chromedriver.exe] found in cache
+2025-04-11 17:48:16,871 - INFO - ====== WebDriver manager ======
+2025-04-11 17:48:18,845 - INFO - Get LATEST chromedriver version for google-chrome
+2025-04-11 17:48:19,119 - INFO - Get LATEST chromedriver version for google-chrome
+2025-04-11 17:48:19,361 - INFO - Driver [C:\Users\manso\.wdm\drivers\chromedriver\win64\135.0.7049.84\chromedriver-win32/chromedriver.exe] found in cache
+2025-04-11 18:01:50,393 - WARNING - Retrying (Retry(total=2, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None)': /session/811875fd32a753059c09c244004ab0a9
+2025-04-11 18:02:08,489 - INFO - ====== WebDriver manager ======
+2025-04-11 18:02:10,485 - INFO - Get LATEST chromedriver version for google-chrome
+2025-04-11 18:02:10,737 - INFO - Get LATEST chromedriver version for google-chrome
+2025-04-11 18:02:10,982 - INFO - Driver [C:\Users\manso\.wdm\drivers\chromedriver\win64\135.0.7049.84\chromedriver-win32/chromedriver.exe] found in cache
+2025-04-11 18:03:47,212 - WARNING - Retrying (Retry(total=2, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x0000028BB47DD690>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it')': /session/500efd678c3175fc8fccb6c2075fa5e2
+2025-04-11 18:03:51,287 - WARNING - Retrying (Retry(total=1, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x0000028BB485ED90>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it')': /session/500efd678c3175fc8fccb6c2075fa5e2
+2025-04-11 18:03:55,384 - WARNING - Retrying (Retry(total=0, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x0000028BB485C9D0>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it')': /session/500efd678c3175fc8fccb6c2075fa5e2
+2025-04-11 18:04:13,471 - INFO - ====== WebDriver manager ======
+2025-04-11 18:04:15,585 - INFO - Get LATEST chromedriver version for google-chrome
+2025-04-11 18:04:15,819 - INFO - Get LATEST chromedriver version for google-chrome
+2025-04-11 18:04:16,080 - INFO - Driver [C:\Users\manso\.wdm\drivers\chromedriver\win64\135.0.7049.84\chromedriver-win32/chromedriver.exe] found in cache
+2025-04-11 18:04:50,753 - WARNING - Retrying (Retry(total=2, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x00000216B3DD3FD0>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it')': /session/a84b263e7349aca2371f226858f7e493
+2025-04-11 18:04:54,856 - WARNING - Retrying (Retry(total=1, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x00000216B4CC5950>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it')': /session/a84b263e7349aca2371f226858f7e493
+2025-04-11 18:04:58,954 - WARNING - Retrying (Retry(total=0, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x00000216B4CC5D50>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it')': /session/a84b263e7349aca2371f226858f7e493
+2025-04-11 18:05:50,917 - INFO - ====== WebDriver manager ======
+2025-04-11 18:05:52,622 - INFO - Get LATEST chromedriver version for google-chrome
+2025-04-11 18:05:52,859 - INFO - Get LATEST chromedriver version for google-chrome
+2025-04-11 18:05:53,095 - INFO - Driver [C:\Users\manso\.wdm\drivers\chromedriver\win64\135.0.7049.84\chromedriver-win32/chromedriver.exe] found in cache
+2025-04-11 18:10:24,653 - WARNING - Retrying (Retry(total=2, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000002266F3BD150>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it')': /session/81d7b8494b7fcb7567b3a5092725eb55
+2025-04-11 18:10:28,745 - WARNING - Retrying (Retry(total=1, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000002266F43CE90>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it')': /session/81d7b8494b7fcb7567b3a5092725eb55
+2025-04-11 18:10:32,845 - WARNING - Retrying (Retry(total=0, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000002266F43C890>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it')': /session/81d7b8494b7fcb7567b3a5092725eb55
+2025-04-11 18:10:48,005 - INFO - ====== WebDriver manager ======
+2025-04-11 18:10:49,727 - INFO - Get LATEST chromedriver version for google-chrome
+2025-04-11 18:10:50,022 - INFO - Get LATEST chromedriver version for google-chrome
+2025-04-11 18:10:50,240 - INFO - Driver [C:\Users\manso\.wdm\drivers\chromedriver\win64\135.0.7049.84\chromedriver-win32/chromedriver.exe] found in cache
+2025-04-11 18:16:28,105 - WARNING - Retrying (Retry(total=2, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None)': /session/de95571759df992e937580eaa9ed0207
+2025-04-11 18:16:48,494 - INFO - ====== WebDriver manager ======
+2025-04-11 18:16:50,312 - INFO - Get LATEST chromedriver version for google-chrome
+2025-04-11 18:16:50,588 - INFO - Get LATEST chromedriver version for google-chrome
+2025-04-11 18:16:50,828 - INFO - Driver [C:\Users\manso\.wdm\drivers\chromedriver\win64\135.0.7049.84\chromedriver-win32/chromedriver.exe] found in cache
+2025-04-11 18:17:13,790 - WARNING - Retrying (Retry(total=2, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None)': /session/3efb66101615c208e1afae17b061f046
+2025-04-11 18:24:38,583 - INFO - ====== WebDriver manager ======
+2025-04-11 18:24:40,474 - INFO - Get LATEST chromedriver version for google-chrome
+2025-04-11 18:24:40,982 - INFO - Get LATEST chromedriver version for google-chrome
+2025-04-11 18:24:41,271 - INFO - Driver [C:\Users\manso\.wdm\drivers\chromedriver\win64\135.0.7049.84\chromedriver-win32/chromedriver.exe] found in cache
+2025-04-11 18:25:43,137 - WARNING - Retrying (Retry(total=2, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001BFB037D690>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it')': /session/8e6a3e2b3d765c1eafd1d29b842b5fee
+2025-04-11 18:25:47,227 - WARNING - Retrying (Retry(total=1, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001BFB03E4050>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it')': /session/8e6a3e2b3d765c1eafd1d29b842b5fee
+2025-04-11 18:25:51,322 - WARNING - Retrying (Retry(total=0, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000001BFB03E5410>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it')': /session/8e6a3e2b3d765c1eafd1d29b842b5fee
+2025-04-11 18:29:15,506 - INFO - ====== WebDriver manager ======
+2025-04-11 18:29:20,714 - INFO - Get LATEST chromedriver version for google-chrome
+2025-04-11 18:29:21,120 - INFO - Get LATEST chromedriver version for google-chrome
+2025-04-11 18:29:21,344 - INFO - Driver [C:\Users\manso\.wdm\drivers\chromedriver\win64\135.0.7049.84\chromedriver-win32/chromedriver.exe] found in cache
+2025-04-11 18:29:56,268 - WARNING - Retrying (Retry(total=2, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None)': /session/349def1b5411573bd2a58d0bf56706cd
+2025-04-11 18:37:51,188 - INFO - ====== WebDriver manager ======
+2025-04-11 18:37:53,739 - INFO - Get LATEST chromedriver version for google-chrome
+2025-04-11 18:37:54,040 - INFO - Get LATEST chromedriver version for google-chrome
+2025-04-11 18:37:54,276 - INFO - Driver [C:\Users\manso\.wdm\drivers\chromedriver\win64\135.0.7049.84\chromedriver-win32/chromedriver.exe] found in cache
+2025-04-11 18:42:43,081 - WARNING - Retrying (Retry(total=2, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000002B4068999D0>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it')': /session/4b0c62fb54df5d039058f022fa79b766
+2025-04-11 18:42:47,170 - WARNING - Retrying (Retry(total=1, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000002B406E9D690>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it')': /session/4b0c62fb54df5d039058f022fa79b766
+2025-04-11 18:42:51,252 - WARNING - Retrying (Retry(total=0, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000002B406E9DE10>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it')': /session/4b0c62fb54df5d039058f022fa79b766
