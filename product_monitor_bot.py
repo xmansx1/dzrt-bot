@@ -1,5 +1,4 @@
 import os
-import time
 import asyncio
 import logging
 import requests
@@ -46,9 +45,10 @@ async def fetch_product_status(page, product):
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/91.0.4472.124 Safari/537.36"
         })
 
+        # محاولة التحميل مرتين
         for attempt in range(2):
             try:
-                await page.goto(product["url"], timeout=90003, wait_until="load")
+                await page.goto(product["url"], timeout=90000, wait_until="load")
                 break
             except Exception as e:
                 logging.warning(f"🔁 محاولة {attempt + 1} فشلت لصفحة {product['name']}")
@@ -103,7 +103,8 @@ def send_telegram_alert(product_name, status, image_url, url):
 async def monitor():
     logging.info("🚀 بدأ البوت في مراقبة المنتجات...")
     async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=True)
+        # تعطيل المهلة الافتراضية
+        browser = await p.chromium.launch(headless=True, timeout=0)
         page = await browser.new_page()
 
         while True:
