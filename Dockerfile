@@ -1,23 +1,32 @@
-FROM python:3.9-slim
+# استخدم صورة رسمية من Python
+FROM python:3.11-slim
 
-# تثبيت مكتبات النظام الضرورية لتشغيل Playwright
-RUN apt-get update && apt-get install -y \
-    wget gnupg2 curl unzip \
-    libnss3 libatk-bridge2.0-0 libgtk-3-0 libxss1 libasound2 libxshmfence1 \
-    libgbm1 libxcomposite1 libxrandr2 libglu1-mesa libxi6 libxcursor1 \
-    libxtst6 libgconf-2-4 libpango-1.0-0 libcups2 libxdamage1 libxfixes3 \
-    libatspi2.0-0 libx11-xcb1 libdrm2 libdbus-1-3 libexpat1 libxext6 libglib2.0-0 \
-    && rm -rf /var/lib/apt/lists/*
-
-# نسخ ملفات المشروع إلى الحاوية
+# إعداد مجلد العمل
 WORKDIR /app
+
+# نسخ الملفات إلى الحاوية
 COPY . .
 
-# تثبيت الحزم المطلوبة من Python
-RUN pip install --no-cache-dir -r requirements.txt
+# تثبيت أدوات النظام اللازمة لـ Playwright
+RUN apt-get update && apt-get install -y \
+    wget curl unzip gnupg2 \
+    libglib2.0-0 libnss3 libatk-bridge2.0-0 libdrm2 \
+    libxcomposite1 libxdamage1 libxrandr2 libasound2 \
+    libatk1.0-0 libcups2 libdbus-1-3 libxss1 libx11-xcb1 \
+    libxext6 libxfixes3 libxkbcommon0 libpango-1.0-0 \
+    libcairo2 libgbm1 libexpat1 libnspr4 libsmime3 libx11-6 \
+    libxcomposite1 libxcursor1 libxdamage1 libxrandr2 \
+    libxss1 libxtst6 libatk-bridge2.0-0 libgtk-3-0 \
+    --no-install-recommends && rm -rf /var/lib/apt/lists/*
 
-# تثبيت المتصفحات اللازمة لـ Playwright
+# تثبيت pip وتحديثه
+RUN pip install --upgrade pip
+
+# تثبيت الحزم المطلوبة
+RUN pip install -r requirements.txt
+
+# تثبيت المتصفحات الخاصة بـ Playwright
 RUN python -m playwright install --with-deps
 
-# تشغيل البوت
+# تحديد أمر التشغيل
 CMD ["python", "product_monitor_bot.py"]

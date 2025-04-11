@@ -7,7 +7,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 from playwright.async_api import async_playwright
 
-# إعداد التسجيل
+# إعداد نظام التسجيل
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
@@ -17,6 +17,7 @@ logging.basicConfig(
     ]
 )
 
+# تحميل متغيرات البيئة
 load_dotenv()
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 CHAT_ID = os.getenv("CHAT_ID")
@@ -45,6 +46,9 @@ async def fetch_product_status(page, product):
         await page.goto(product["url"], timeout=60000)
         await page.wait_for_load_state("networkidle")
 
+        # انتظار ظهور العنصر بشكل صريح
+        await page.wait_for_selector("span.product__inventory", timeout=20000)
+
         inventory_element = await page.query_selector("span.product__inventory")
         inventory_text = await inventory_element.inner_text() if inventory_element else ""
 
@@ -54,10 +58,12 @@ async def fetch_product_status(page, product):
             return "غير متوفر", img_url
         elif inventory_text:
             return "متوفر", img_url
+
         return "غير معروف", img_url
+
     except Exception as e:
         logging.error(f"⚠️ خطأ في قراءة بيانات المنتج {product['name']}: {e}")
-        return "None", None
+        return None, None
 
 def send_telegram_alert(product_name, status, image_url, url):
     now = datetime.now().strftime("%H:%M:%S")

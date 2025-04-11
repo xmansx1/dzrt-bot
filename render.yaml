@@ -1,12 +1,15 @@
 services:
   - type: web
     name: dzrt-bot
-    env: python
-    plan: free
+    env: docker
+    repo: https://github.com/xmansx1/dzrt-bot
     branch: main
     autoDeploy: true
-    buildCommand: |
-      apt-get update && apt-get install -y wget gnupg2 curl unzip
-      pip install -r requirements.txt
-      python -m playwright install --with-deps
+    buildCommand: ./start.sh
     startCommand: python product_monitor_bot.py
+    plan: free
+    envVars:
+      - key: TELEGRAM_TOKEN
+        sync: false
+      - key: CHAT_ID
+        sync: false
