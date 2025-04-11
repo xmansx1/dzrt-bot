@@ -48,7 +48,7 @@ async def fetch_product_status(page, product):
 
         for attempt in range(2):
             try:
-                await page.goto(product["url"], timeout=90000, wait_until="load")
+                await page.goto(product["url"], timeout=90003, wait_until="load")
                 break
             except Exception as e:
                 logging.warning(f"🔁 محاولة {attempt + 1} فشلت لصفحة {product['name']}")
