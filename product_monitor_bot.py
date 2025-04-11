@@ -40,13 +40,14 @@ products = [
 ]
 
 previous_status = {}
+availability_start = {}
 
 async def fetch_product_status(page, product):
     try:
         await page.goto(product["url"], timeout=60000)
         await page.wait_for_load_state("networkidle")
 
-        # الانتظار المرن لعنصر المخزون
+        # انتظار العنصر المرن
         try:
             await page.wait_for_selector("span.product__inventory", timeout=40000)
             inventory_element = await page.query_selector("span.product__inventory")
@@ -98,6 +99,24 @@ def send_telegram_alert(product_name, status, image_url, url):
     except Exception as e:
         logging.error(f"❌ فشل إرسال التنبيه: {e}")
 
+def send_out_of_stock_alert(product_name, duration):
+    msg = (
+        f"❌ <b>نفد المنتج:</b> <code>{product_name}</code>\n"
+        f"⏱️ <b>مدة التوفر:</b> <code>{str(duration).split('.')[0]}</code>"
+    )
+
+    payload = {
+        "chat_id": CHAT_ID,
+        "text": msg,
+        "parse_mode": "HTML"
+    }
+
+    try:
+        response = requests.post(f"{TELEGRAM_API_URL}/sendMessage", json=payload)
+        logging.info(f"📴 تم إشعار نفاد المنتج: {product_name} ({response.status_code})")
+    except Exception as e:
+        logging.error(f"❌ فشل إرسال إشعار النفاد: {e}")
+
 async def monitor():
     logging.info("🚀 بدأ البوت في مراقبة المنتجات...")
     async with async_playwright() as p:
@@ -107,18 +126,25 @@ async def monitor():
         while True:
             for product in products:
                 status, image_url = await fetch_product_status(page, product)
-
                 name = product["name"]
+
                 if not status or not image_url:
                     continue
 
-                if name not in previous_status:
-                    previous_status[name] = status
+                prev_status = previous_status.get(name)
+                previous_status[name] = status
 
-                if status == "متوفر" and previous_status[name] != "متوفر":
+                # إذا المنتج أصبح متوفر
+                if status == "متوفر" and prev_status != "متوفر":
+                    availability_start[name] = datetime.now()
                     send_telegram_alert(name, status, image_url, product["url"])
 
-                previous_status[name] = status
+                # إذا المنتج أصبح غير متوفر وكان متوفر مسبقًا
+                elif status != "متوفر" and prev_status == "متوفر":
+                    if name in availability_start:
+                        duration = datetime.now() - availability_start[name]
+                        send_out_of_stock_alert(name, duration)
+                        del availability_start[name]
 
             await asyncio.sleep(60)
 
