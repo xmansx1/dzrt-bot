@@ -18,7 +18,6 @@ RUN apt-get update && apt-get install -y \
 # تثبيت متطلبات البايثون
 RUN pip install --no-cache-dir -r requirements.txt
 
-# تثبيت المتصفحات الخاصة بـ Playwright
-RUN python -m playwright install --with-deps
+ 
 
 CMD ["python", "product_monitor_bot.py"]
