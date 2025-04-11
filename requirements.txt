@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 
 
@@ -6,3 +7,9 @@ beautifulsoup4==4.12.2
 requests==2.31.0
 python-dotenv==1.0.0
 webdriver-manager==3.8.6
+=======
+requests
+beautifulsoup4
+python-dotenv
+playwright
+>>>>>>> 340b779381be77cd1608413bb0956f5dab0761d5
