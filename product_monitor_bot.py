@@ -1,10 +1,10 @@
 import os
-import asyncio
+import time
 import logging
 import requests
+from bs4 import BeautifulSoup
 from datetime import datetime
 from dotenv import load_dotenv
-from playwright.async_api import async_playwright
 
 # إعداد التسجيل
 logging.basicConfig(
@@ -19,9 +19,9 @@ logging.basicConfig(
 load_dotenv()
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 CHAT_ID = os.getenv("CHAT_ID")
-TELEGRAM_API_URL = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}"
+TELEGRAM_API_URL = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendPhoto"
 
-# قائمة المنتجات
+# المنتجات
 products = [
     {
         "name": "Seaside Frost",
@@ -39,42 +39,34 @@ products = [
 
 previous_status = {}
 
-async def fetch_product_status(page, product):
+def fetch_status(product):
     try:
-        await page.set_extra_http_headers({
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/91.0.4472.124 Safari/537.36"
-        })
+        headers = {"User-Agent": "Mozilla/5.0"}
+        response = requests.get(product["url"], headers=headers, timeout=30)
+        response.raise_for_status()
 
-        # محاولة التحميل مرتين
-        for attempt in range(2):
-            try:
-                await page.goto(product["url"], timeout=90000, wait_until="domcontentloaded")
-                break
-            except Exception as e:
-                logging.warning(f"🔁 محاولة {attempt + 1} فشلت لصفحة {product['name']}")
-                if attempt == 1:
-                    raise e
-                await asyncio.sleep(5)
+        soup = BeautifulSoup(response.text, "html.parser")
 
-        inventory_element = await page.query_selector("span.product__inventory")
-        inventory_text = await inventory_element.inner_text() if inventory_element else ""
+        inventory = soup.find("span", class_="product__inventory")
+        inventory_text = inventory.text.strip() if inventory else ""
 
-        img_url = await page.get_attribute("meta[property='og:image']", "content")
+        image_meta = soup.find("meta", property="og:image")
+        image_url = image_meta["content"] if image_meta else "https://via.placeholder.com/600x600.png?text=NO+IMAGE"
 
         if "نفد من المخزون" in inventory_text or "غير متوفر" in inventory_text:
-            return "غير متوفر", img_url
+            return "غير متوفر", image_url
         elif inventory_text:
-            return "متوفر", img_url
-        return "غير معروف", img_url
+            return "متوفر", image_url
+        return "غير معروف", image_url
     except Exception as e:
         logging.error(f"⚠️ خطأ في قراءة بيانات المنتج {product['name']}: {e}")
-        return "None", None
+        return None, None
 
-def send_telegram_alert(product_name, status, image_url, url):
+def send_telegram_alert(name, status, image_url, url):
     now = datetime.now().strftime("%H:%M:%S")
-    msg = (
+    caption = (
         f"<b>🎉 منتج جديد متوفر الآن!</b>\n\n"
-        f"🧃 <b>المنتج:</b> <code>{product_name}</code>\n"
+        f"🧃 <b>المنتج:</b> <code>{name}</code>\n"
         f"📦 <b>الحالة:</b> ✅ <b>{status}</b>\n"
         f"🕒 <b>الوقت:</b> <code>{now}</code>"
     )
@@ -82,7 +74,7 @@ def send_telegram_alert(product_name, status, image_url, url):
     payload = {
         "chat_id": CHAT_ID,
         "photo": image_url,
-        "caption": msg,
+        "caption": caption,
         "parse_mode": "HTML",
         "reply_markup": {
             "inline_keyboard": [[
@@ -95,34 +87,31 @@ def send_telegram_alert(product_name, status, image_url, url):
     }
 
     try:
-        response = requests.post(f"{TELEGRAM_API_URL}/sendPhoto", json=payload)
-        logging.info(f"📦 تم إرسال تنبيه للمنتج: {product_name} (Status: {response.status_code})")
+        res = requests.post(TELEGRAM_API_URL, json=payload)
+        logging.info(f"📦 تم إرسال تنبيه للمنتج: {name} (رمز الحالة: {res.status_code})")
     except Exception as e:
-        logging.error(f"❌ فشل إرسال التنبيه: {e}")
+        logging.error(f"❌ فشل في إرسال التنبيه للمنتج {name}: {e}")
 
-async def monitor():
+def monitor():
     logging.info("🚀 بدأ البوت في مراقبة المنتجات...")
-    async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=True, timeout=0)
-        page = await browser.new_page()
+    while True:
+        for product in products:
+            status, img = fetch_status(product)
 
-        while True:
-            for product in products:
-                status, image_url = await fetch_product_status(page, product)
-                name = product["name"]
+            if not status or not img:
+                continue
 
-                if not status or not image_url:
-                    continue
+            name = product["name"]
 
-                if name not in previous_status:
-                    previous_status[name] = status
-
-                if status == "متوفر" and previous_status[name] != "متوفر":
-                    send_telegram_alert(name, status, image_url, product["url"])
-
+            if name not in previous_status:
                 previous_status[name] = status
 
-            await asyncio.sleep(60)
+            if status == "متوفر" and previous_status[name] != "متوفر":
+                send_telegram_alert(name, status, img, product["url"])
+
+            previous_status[name] = status
+
+        time.sleep(60)
 
 if __name__ == "__main__":
-    asyncio.run(monitor())
+    monitor()

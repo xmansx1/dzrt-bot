@@ -1,9 +1,8 @@
 services:
-  - type: web
+  - type: worker
     name: dzrt-bot
-    env: docker
-    plan: free
+    env: python
     branch: main
-    autoDeploy: true
-    buildCommand: ""
-    startCommand: ""
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python product_monitor_bot.py
