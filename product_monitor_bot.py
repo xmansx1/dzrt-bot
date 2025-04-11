@@ -22,7 +22,7 @@ TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 CHAT_ID = os.getenv("CHAT_ID")
 TELEGRAM_API_URL = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}"
 
-# قائمة المنتجات
+# المنتجات المستهدفة
 products = [
     {
         "name": "Seaside Frost",
@@ -46,8 +46,7 @@ async def fetch_product_status(page, product):
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
         })
 
-        await page.goto(product["url"], timeout=90000)
-        await page.wait_for_load_state("networkidle")
+        await page.goto(product["url"], timeout=90000, wait_until="domcontentloaded")
 
         inventory_element = await page.query_selector("span.product__inventory")
         inventory_text = await inventory_element.inner_text() if inventory_element else ""
@@ -96,7 +95,7 @@ def send_telegram_alert(product_name, status, image_url, url):
 async def monitor():
     logging.info("🚀 بدأ البوت في مراقبة المنتجات...")
     async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=True)
+        browser = await p.chromium.launch(headless=True, slow_mo=100)
         page = await browser.new_page()
 
         while True:
