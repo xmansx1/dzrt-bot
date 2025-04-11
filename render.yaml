@@ -1,28 +1,10 @@
 services:
-<<<<<<< HEAD
-  - type: worker
-    name: product-monitor-bot
-    runtime: python
-    plan: free
-    region: oregon
-    buildCommand: pip install -r requirements.txt
-    startCommand: ./start.sh
-=======
   - type: web
-    name: dzrt-product-monitor
+    name: dzrt-bot
     env: python
-    buildCommand: |
-      pip install -r requirements.txt
-      python -m playwright install --with-deps
+    buildCommand: bash start.sh
     startCommand: python product_monitor_bot.py
->>>>>>> 340b779381be77cd1608413bb0956f5dab0761d5
-    envVars:
-      - key: TELEGRAM_TOKEN
-        sync: false
-      - key: CHAT_ID
-        sync: false
-<<<<<<< HEAD
-=======
-    region: oregon
     plan: free
->>>>>>> 340b779381be77cd1608413bb0956f5dab0761d5
+    region: oregon
+    branch: main
+    autoDeploy: true
