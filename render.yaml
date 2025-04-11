@@ -2,7 +2,7 @@ services:
   - type: web
     name: dzrt-bot
     env: python
-    buildCommand: ./start.sh
+    buildCommand: bash start.sh
     startCommand: python product_monitor_bot.py
     plan: free
     branch: main
