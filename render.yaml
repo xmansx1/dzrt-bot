@@ -5,9 +5,8 @@ services:
     plan: free
     branch: main
     autoDeploy: true
-buildCommand: |
-    apt-get update && apt-get install -y wget gnupg2 curl unzip
-    pip install -r requirements.txt
-    python -m playwright install --with-deps
-
-startCommand: python product_monitor_bot.py
+    buildCommand: |
+      apt-get update && apt-get install -y wget gnupg2 curl unzip
+      pip install -r requirements.txt
+      python -m playwright install --with-deps
+    startCommand: python product_monitor_bot.py
