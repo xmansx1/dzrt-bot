@@ -46,11 +46,14 @@ async def fetch_product_status(page, product):
         await page.goto(product["url"], timeout=60000)
         await page.wait_for_load_state("networkidle")
 
-        # انتظار ظهور العنصر بشكل صريح
-        await page.wait_for_selector("span.product__inventory", timeout=20000)
-
-        inventory_element = await page.query_selector("span.product__inventory")
-        inventory_text = await inventory_element.inner_text() if inventory_element else ""
+        # الانتظار المرن لعنصر المخزون
+        try:
+            await page.wait_for_selector("span.product__inventory", timeout=40000)
+            inventory_element = await page.query_selector("span.product__inventory")
+            inventory_text = await inventory_element.inner_text() if inventory_element else ""
+        except Exception:
+            logging.warning(f"⚠️ لم يتم العثور على عنصر المخزون في {product['name']}")
+            inventory_text = ""
 
         img_url = await page.get_attribute("meta[property='og:image']", "content")
 
