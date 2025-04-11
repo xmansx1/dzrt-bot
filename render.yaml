@@ -4,6 +4,6 @@ services:
     env: docker
     plan: free
     branch: main
-    rootDir: .
-    dockerfilePath: ./Dockerfile
     autoDeploy: true
+    buildCommand: ""
+    startCommand: ""
