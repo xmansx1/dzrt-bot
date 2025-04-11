@@ -3,12 +3,11 @@
 # تحديث النظام وتثبيت الأدوات الأساسية
 apt-get update && apt-get install -y wget curl unzip gnupg2
 
-# تثبيت الحزم المطلوبة من requirements.txt
-pip install --upgrade pip
+# تثبيت المتطلبات
 pip install -r requirements.txt
 
-# تثبيت متصفحات Playwright المطلوبة للتشغيل
-python -m playwright install --with-deps
+# تثبيت المتصفحات اللازمة لـ Playwright
+playwright install --with-deps
 
-# تشغيل سكربت البوت
+# بدء تشغيل البوت
 python product_monitor_bot.py
